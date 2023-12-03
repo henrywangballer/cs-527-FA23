@@ -19,23 +19,29 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # Get the service resource.
-dynamodb = boto3.resource('dynamodb')
+LOCALSTACK_ENDPOINT = 'http://localhost.localstack.cloud:4566'
+AWS_REGION = "us-east-1"
+# Get the service resource.
+dynamodb = boto3.resource("dynamodb", endpoint_url=LOCALSTACK_ENDPOINT, region_name=AWS_REGION)
 
 # set environment variable
 TABLE_NAME = os.environ['TABLE_NAME']
 
 
 def lambda_handler(event, context):
+    print(f'===============inside producer lambda')
     table = dynamodb.Table(TABLE_NAME)
     # put item in table
-    response = table.put_item(
-        Item={
-            'id': str(uuid.uuid4())
-        }
-    )
+    for i in range(20):
+        print(f'==============put item')
+        response = table.put_item(
+            Item={
+                'id': str(i)
+            }
+        )
 
-    print("PutItem succeeded:")
-    print(json.dumps(response, indent=4, cls=DecimalEncoder))
+        print("PutItem succeeded:")
+        print(json.dumps(response, indent=4, cls=DecimalEncoder))
 
     return {
         'statusCode': 200,

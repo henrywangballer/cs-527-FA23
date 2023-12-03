@@ -18,18 +18,24 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(o)
 
 
+LOCALSTACK_ENDPOINT = 'http://localhost.localstack.cloud:4566'
+AWS_REGION = "us-east-1"
 # Get the service resource.
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource("dynamodb", endpoint_url=LOCALSTACK_ENDPOINT, region_name=AWS_REGION)
 
 # set environment variable
 TABLE_NAME = os.environ['TABLE_NAME']
 
 
 def lambda_handler(event, context):
+    # print(f'{TABLE_NAME}==============')
     table = dynamodb.Table(TABLE_NAME)
+
+    payload = []
     # Scan items in table
     try:
         response = table.scan()
+        payload = response['Items']
     except ClientError as e:
         print(e.response['Error']['Message'])
     else:
@@ -39,4 +45,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
+        'body': json.dumps(payload)
     }

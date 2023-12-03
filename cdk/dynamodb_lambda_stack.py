@@ -36,11 +36,15 @@ class DynamodbLambdaStack(Stack):
         producer_lambda = aws_lambda.Function(self, "producer_lambda_function",
                                               runtime=aws_lambda.Runtime.PYTHON_3_10,
                                               function_name='producer_lambda_function',
-                                              handler="producer-lambda_handler",
+                                              handler="producer-handler.lambda_handler",
                                               role=lambda_iam_role,
+                                              environment={
+                                                  'TABLE_NAME': demo_table.table_name
+                                              },
+                                              timeout=Duration.seconds(200),
                                               code=aws_lambda.Code.from_asset("./lambda"))
 
-        producer_lambda.add_environment("TABLE_NAME", demo_table.table_name)
+        # producer_lambda.add_environment("TABLE_NAME", demo_table.table_name)
 
         # grant permission to lambda to write to demo table
         demo_table.grant_write_data(producer_lambda)
@@ -51,10 +55,14 @@ class DynamodbLambdaStack(Stack):
                                               function_name='consumer_lambda_function',
                                               handler="consumer-handler.lambda_handler",
                                               role=lambda_iam_role,
+                                              environment={
+                                                  'TABLE_NAME': demo_table.table_name
+                                              },
+                                              timeout=Duration.seconds(200),
                                               code=aws_lambda.Code.from_asset("./lambda"))
 
-        consumer_lambda.add_environment("TABLE_NAME", demo_table.table_name)
-
+        # consumer_lambda.add_environment("TABLE_NAME", demo_table.table_name)
+        # print(demo_table.table_name)
         # grant permission to lambda to read from demo table
         demo_table.grant_read_data(consumer_lambda)
 
